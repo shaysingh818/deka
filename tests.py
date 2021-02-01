@@ -1,5 +1,5 @@
 import unittest
-import cli_tool.cli as cli
+import cli_tool as cli
 from cli_tool.database import AccountKeys, QuestionKeys
 import requests
 
