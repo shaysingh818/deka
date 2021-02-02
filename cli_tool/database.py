@@ -82,7 +82,7 @@ class QuestionKeys:
 
     def create(self, question, key, account_id):
         data = (question,key, account_id)
-        sql = '''  INSERT INTO question_keys(service,key) VALUES (?, ?, ?) '''
+        sql = '''  INSERT INTO question_keys(question,key,question_account) VALUES (?, ?, ?) '''
         cur = self.conn.cursor()
         cur.execute(sql, data) 
         self.conn.commit()
@@ -106,7 +106,7 @@ class QuestionKeys:
         result = cur.fetchone()
         account = AccountKey(result[1], result[2])
         return account
-
+ 
     def delete_all(self):
         cur = self.conn.cursor()
         cur.execute('DELETE FROM question_keys')

@@ -36,7 +36,7 @@ def decrypt_all():
         keys = AccountKeys() 
         myKeys = keys.all()
         response = requests.get(HOST + "/accounts")
-        json_data = json.loads(response.text)
+        json_data = json.loads(response.text) 
         key_count = 0
         for key, password in zip(myKeys, json_data):
             client_key = key.get_key()
@@ -60,29 +60,34 @@ def create_account(service, username, password):
     params["username"] = username
     params["password"] = password
     server = requests.post(HOST + "/accounts", data=params)
-    data = json.loads(server.text) 
-    service = data["service"] 
-    key = bytes(data["key"], "utf-8")
-    try:
-        keys = AccountKeys()
-        keys.create(service, key) 
-    except sqlite3.OperationalError as  e:
-        print(e)
-    return True
+    data = json.loads(server.text)
+    if data == "Error":
+        print("Error occured: Could not create account")
+    else: 
+        service = data["service"] 
+        key = bytes(data["key"], "utf-8")
+        try:
+            keys = AccountKeys()
+            keys.create(service, key) 
+        except sqlite3.OperationalError as  e:
+            print(e)
+        return True
 
 
 def create_question(question, answer, service):
+    account_id_response = requests.get(HOST + "/account/{}".format(service))
+    account_data = json.loads(account_id_response.text) 
+    account_id = account_data["account_id"]
     params = {}
     params["question"] = question
-    params["answer"] = answer
-    server = requests.post(HOST + "/accounts/" + service, data=params)
-    
+    params["answer"] = answer   
+    server = requests.post(HOST + "/account/question/" + service, data=params)
     data = json.loads(server.text) 
     service = data["service"] 
     key = bytes(data["key"], "utf-8")
     try:
         keys = QuestionKeys()
-        keys.create(service, question, answer) 
+        keys.create(question, key, account_id) 
     except sqlite3.OperationalError as  e:
         print(e)
     return True 

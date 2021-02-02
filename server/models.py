@@ -1,9 +1,8 @@
 from cryptography.fernet import Fernet
 
 class Account:
-    #prior to being inserted 
-
-    def __init__(self, service, username, password):
+    def __init__(self, account_id, service, username, password):
+        self.account_id = account_id
         self.service = service
         self.username = username
         self.password = password
@@ -25,6 +24,7 @@ class Account:
 
     def dump(self):
         return {
+            'account_id': self.account_id,
             'password': str(self.password),
             'username' : self.username, 
             'service': self.service 
@@ -32,17 +32,21 @@ class Account:
 
 class Question:
 
-    def __init__(self, question, answer, account_id):
+    def __init__(self,question_id, question, answer, account_id):
+        self.question_id = question_id
         self.question = question
         self.answer = answer
         self.account_id = account_id
+
+    def get_question_id(self):
+        return self.question_id
 
     def get_question(self):
         return self.question
     
     def get_answer(self):
-        return self.answer
-    
+        return self.answer    
+
     def get_account_id(self):
         return self.account_id
 
@@ -57,6 +61,7 @@ class Question:
     
     def dump(self):
         return {
+            'question_id': self.question_id, 
             'question': self.question,
             'answer' : self.answer,
             'account_id': self.account_id
@@ -64,7 +69,8 @@ class Question:
 
 class Contact:
 
-    def __init__(self, name, phone, email):
+    def __init__(self, contact_id, name, phone, email):
+        self.contact_id = contact_id
         self.name = name
         self.phone = phone
         self.email = email
@@ -89,6 +95,7 @@ class Contact:
  
     def dump(self):
         return {
+            'contact_id': self.contact_id,
             'password': str(self.password),
             'username' : self.username, 
             'service': self.service 
@@ -96,13 +103,15 @@ class Contact:
 
 class Log:
 
-    def __init__(self, ip_address, user_agent, mac_addr):
+    def __init__(self, log_id, ip_address, user_agent, mac_addr):
+        self.log_id = log_id
         self.ip_address = ip_address
         self.agent = user_agent
         self.mac_addr = mac_addr
 
     def dump(self):
         return {
+            'log_id' : self.log_id,
             'ip_address': self.ip_address,
             'user_agent': self.agent,
             'mac_addr': self.mac_addr

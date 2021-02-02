@@ -1,6 +1,5 @@
 from cryptography.fernet import Fernet
 
-# key storing model
 class AccountKey:
     
     def __init__(self, account_id, service, key): 
@@ -30,7 +29,6 @@ class AccountKey:
         } 
 
         
-# key storing model for questions
 class QuestionKey:
     
     def __init__(self, question_id, question, key, account_id):

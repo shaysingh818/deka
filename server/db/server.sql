@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 );
 
 CREATE TABLE IF NOT EXISTS account_security_questions (
-	question_id INTEGER, 
+	question_id INTEGER PRIMARY KEY, 
 	question TEXT, 
 	answer TEXT,
 	question_account INTEGER, 

@@ -7,6 +7,7 @@ from controllers import Accounts, Questions, Logs
 import sqlite3
 import json
 import netifaces as nif
+from flask_api import status
 #import controllers
 
 secure_shared_service = Flask(__name__)
@@ -26,13 +27,14 @@ class accounts(Resource):
         service = request.form['service']
         username = request.form['username']
         password = request.form['password'] 
-        a = Account(service, username, password)
         acc = Accounts() 
-        keys = acc.prepare(a) 
+        result = acc.encrypt_and_create(service, username, password)
+        if result == False:
+            print(result) 
+            return jsonify("Error") 
         obj = {}
-        obj["service"] = keys[0] 
-        obj["key"] = keys[1].decode('utf-8') 
-        print(obj)  
+        obj["service"] = result[0]
+        obj["key"] = result[1]
         return jsonify(obj)
 
     def delete(self):
@@ -63,14 +65,14 @@ class accountQuestion(Resource):
     def post(self, account_service):
         question = request.form['question']
         answer = request.form['answer'] 
-        acc = Accounts()
-        questions = Questions()
-        a_id = acc.get(account_service) 
-        q = Question(question, answer, a_id) 
-        keys = questions.prepare(q) 
-        return jsonify(keys) 
+        questions = Questions() 
+        result = questions.encrypt_and_create(question, answer, account_service)
+        obj = {}
+        obj["service"] = result[0]
+        obj["key"] = result[1]
+        return jsonify(obj)
 
-
+        
 class accountQuestionDetail(Resource):
     def get(self, account_service):
         acc = Accounts()

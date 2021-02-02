@@ -31,28 +31,25 @@ class Accounts:
 
     def __init__(self):
         self.conn = create_connection()
-
-    def encrypt(self, account):
+    
+    def encrypt_and_create(self, service, user, password):
         key = Fernet.generate_key()
-        f = Fernet(key) 
-        token = f.encrypt(bytes(account.get_pass(), 'utf-8'))
-        account.set_pass(token)
-        return (account.get_service(), key)
-    
-    def create(self, service, user, passw):
-        data = (service, user, passw)
-        sql = '''  INSERT INTO accounts(service,username, password) VALUES (?, ?, ?) '''
-        cur = self.conn.cursor()
-        cur.execute(sql, data) 
-        self.conn.commit()
-        print("inserted account ")
-        self.conn.close() 
-    
-    def prepare(self, a):
-        current_key = self.encrypt(a)
-        password_test = a.get_pass().decode('utf-8')
-        self.create(a.get_service(), a.get_user(), password_test)
-        return(current_key[0], current_key[1])
+        f = Fernet(key)
+        token = f.encrypt(bytes(password, 'utf-8'))
+        password_test = token.decode('utf-8')
+        try:
+            data = (service, user, password_test)
+            sql = '''  INSERT INTO accounts(service,username, password) VALUES (?, ?, ?) '''
+            cur = self.conn.cursor()
+            cur.execute(sql, data) 
+            self.conn.commit()
+            print("inserted account ")
+            self.conn.close() 
+        except sqlite3.Error as e:
+            self.conn.close()
+            print(e) 
+            return False
+        return (service, key)
 
     def all(self):
         accounts = []
@@ -60,7 +57,7 @@ class Accounts:
         cur.execute('SELECT * FROM accounts')   
         rows = cur.fetchall()
         for r in rows:
-            a = Account(r[1], r[2], r[3])
+            a = Account(r[0],r[1], r[2], r[3])
             accounts.append(a)
         self.conn.close() 
         return accounts
@@ -78,7 +75,7 @@ class Accounts:
         data = (account_service,)
         cur.execute('SELECT * FROM accounts WHERE service=? ', data)
         result = cur.fetchone() 
-        account = Account( result[1], result[2], result[3])  
+        account = Account(result[0],result[1], result[2], result[3])  
         self.conn.close() 
         return account
 
@@ -93,12 +90,20 @@ class Questions:
     def __init__(self):
         self.conn = create_connection()
 
-    def encrypt(self, question):
+    def encrypt_and_create(self, question, answer, service):
         key = Fernet.generate_key()
-        f = Fernet(key) 
-        token = f.encrypt(bytes(question.get_answer(), 'utf-8'))
-        question.set_answer(token)
-        return (question.get_question(), key)
+        f = Fernet(key)
+        token = f.encrypt(bytes(answer, 'utf-8'))
+        acc = Accounts()
+        account_id = acc.get(service)
+        data = (question, token, account_id)
+        sql = '''  INSERT INTO account_security_questions(question, answer, question_account) VALUES (?, ?, ?) '''
+        cur = self.conn.cursor()
+        cur.execute(sql, data) 
+        self.conn.commit()
+        print("inserted account ")
+        self.conn.close()
+        return (service, key)
     
     def by_service(self, account_id):
         questions = []
@@ -107,20 +112,11 @@ class Questions:
         cur.execute('SELECT * FROM account_security_questions WHERE question_account=?', data)  
         rows = cur.fetchall()
         for r in rows:
-            q = Question(r[1], r[2], r[3])
+            q = Question(r[0], r[1], r[2], r[3])
+            print(r[0])
             questions.append(q) 
         self.conn.close()
         return questions
-
-    def create(self, conn, question, answer, account_id):
-        data = (question, answer, account_id)
-        sql = '''  INSERT INTO account_security_questions(question, answer, question_account) VALUES (?, ?, ?) '''
-        cur = self.conn.cursor()
-        cur.execute(sql, data) 
-        self.conn.commit()
-        print("inserted question ")
-        self.conn.close() 
-        return cur.lastrowid
  
     def all(self):
         questions = []
@@ -128,16 +124,10 @@ class Questions:
         cur.execute('SELECT * FROM account_security_questions')     
         rows = cur.fetchall()
         for r in rows:
-            q = Question(r[1], r[2], r[3])
+            q = Question(r[0], r[1],r[2], r[3])
             questions.append(a) 
         self.conn.close()
         return questions
-
-    def prepare(self, q):
-        current_key = self.encrypt(q)
-        answer_test = q.get_answer().decode('utf-8')
-        self.create(self.conn,q.get_question(), q.get_answer(), q.get_account_id())
-        return(current_key[0], current_key[1])
 
     def delete_all(self):
         cur = self.conn.cursor()
@@ -166,7 +156,7 @@ class Logs:
         cur.execute('SELECT * FROM decrypt_logs')   
         rows = cur.fetchall()
         for r in rows:
-            l = Log(r[1], r[2], r[3])
+            l = Log(r[0],r[1], r[2], r[3])
             logs.append(l) 
         self.conn.close()
         return logs
