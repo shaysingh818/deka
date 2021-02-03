@@ -34,10 +34,10 @@ class AccountKeys:
     def get(self, account_service):
         data = (account_service,)
         cur = self.conn.cursor()
-        cur.execute('SELECT * FROM accounts WHERE service=?', data)
+        cur.execute('SELECT * FROM account_keys WHERE service=?', data)
         result = cur.fetchone() 
         self.conn.close() 
-        return result[0]
+        return result
 
     def all(self):
         accountKeys = []
@@ -95,7 +95,7 @@ class QuestionKeys:
         cur.execute('SELECT * FROM question_keys')   
         rows = cur.fetchall()
         for r in rows:
-            a = QuestionKey(r[1], r[2])
+            a = QuestionKey(r[0], r[1], r[2], r[3])
             questionKeys.append(a)
         return questionKeys
 

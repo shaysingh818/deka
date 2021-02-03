@@ -67,6 +67,9 @@ class accountQuestion(Resource):
         answer = request.form['answer'] 
         questions = Questions() 
         result = questions.encrypt_and_create(question, answer, account_service)
+        if result == False:
+            print(result) 
+            return jsonify("Error") 
         obj = {}
         obj["service"] = result[0]
         obj["key"] = result[1]

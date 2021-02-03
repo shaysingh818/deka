@@ -22,14 +22,30 @@ def view_keys():
         return False
     return True
 
-def decrypt_one(account_service):
+def view_questions():
+    questions = QuestionKeys()
+    myKeys = questions.all() 
+    try:
+        for m in myKeys:
+            obj = m.dump() 
+            print("Question: {} || Answer: {}".format(obj["question"], obj["key"].decode('utf-8'))) 
+    except sqlite3.OperationalError as  e:
+        print(e)
+        return False
+    return True
+
+def decrypt_one(account_service): 
     response = requests.get(HOST + "/account/{}".format(account_service))
-    json_data = json.loads(response.text)
-    account = json_data["service"]
-    username = json_data["username"]
-    password = json_data["password"] 
-    print("Account: {} || Username: {} || Hash: {}".format(account, username, password))
-    return True 
+    json_data = json.loads(response.text) 
+    keys = AccountKeys()
+    myKey = keys.get(account_service) 
+    client_key = myKey[2] 
+    f = Fernet(client_key) 
+    server_pass = json_data["password"] 
+    myP = bytes(server_pass, 'utf-8')
+    password = f.decrypt(myP)
+    password = password.decode('utf-8') 
+    print("Service:  {} || Password: {}".format(account_service,  password))
 
 def decrypt_all():
     try:
@@ -83,15 +99,31 @@ def create_question(question, answer, service):
     params["answer"] = answer   
     server = requests.post(HOST + "/account/question/" + service, data=params)
     data = json.loads(server.text) 
-    service = data["service"] 
-    key = bytes(data["key"], "utf-8")
-    try:
-        keys = QuestionKeys()
-        keys.create(question, key, account_id) 
-    except sqlite3.OperationalError as  e:
-        print(e)
-    return True 
+    if data == "Error":
+        print("Error occured: Could not create question")
+    else:
+        service = data["service"] 
+        key = bytes(data["key"], "utf-8")
+        try:
+            keys = QuestionKeys()
+            keys.create(question, key, account_id) 
+        except sqlite3.OperationalError as  e:
+            print(e)
+        return True 
 
 def delete_accounts():  
     server = requests.delete(HOST + "/accounts")
     return True 
+
+
+"""
+
+client = dekaClient(
+    DB_PATH, 
+    HOST
+)
+
+client.view_accounts()
+
+       
+"""

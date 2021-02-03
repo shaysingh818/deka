@@ -94,15 +94,20 @@ class Questions:
         key = Fernet.generate_key()
         f = Fernet(key)
         token = f.encrypt(bytes(answer, 'utf-8'))
-        acc = Accounts()
-        account_id = acc.get(service)
-        data = (question, token, account_id)
-        sql = '''  INSERT INTO account_security_questions(question, answer, question_account) VALUES (?, ?, ?) '''
-        cur = self.conn.cursor()
-        cur.execute(sql, data) 
-        self.conn.commit()
-        print("inserted account ")
-        self.conn.close()
+        try:
+            acc = Accounts()
+            account_id = acc.get(service)
+            data = (question, token, account_id)
+            sql = '''  INSERT INTO account_security_questions(question, answer, question_account) VALUES (?, ?, ?) '''
+            cur = self.conn.cursor()
+            cur.execute(sql, data) 
+            self.conn.commit()
+            print("inserted account ")
+            self.conn.close() 
+        except sqlite3.Error as e:
+            self.conn.close()
+            print(e) 
+            return False
         return (service, key)
     
     def by_service(self, account_id):

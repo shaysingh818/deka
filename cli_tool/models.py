@@ -52,7 +52,7 @@ class QuestionKey:
     def dump(self):
         return {
             'id': self.question_id,
-            'question': self.service,
+            'question': self.question,
             'key': self.key, 
             'account': self.account
         }     

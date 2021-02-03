@@ -25,7 +25,9 @@ args = parser.parse_args()
 	
 if args.service and args.username and args.password:
 	cli.create_account(args.service, args.username, args.password)
-	print("To decrypt accounts: ./deka.py -v all ") 
+	print("To decrypt accounts: ./deka.py -v all ")
+elif args.question == 'all':
+    cli.view_questions() 
 elif args.view == 'all':
 	cli.decrypt_all()
 elif args.view == 'account':
