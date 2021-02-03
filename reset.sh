@@ -11,3 +11,5 @@ cd db
 rm client.db
 touch client.db
 cat client.sql | sqlite3 client.db
+
+#made a change here
