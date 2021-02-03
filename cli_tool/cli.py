@@ -10,6 +10,8 @@ import os
 
 HOST =  "http://deka:5000"
 
+#redoing this part
+
 def view_keys():
     keys = AccountKeys()
     myKeys = keys.all() 
