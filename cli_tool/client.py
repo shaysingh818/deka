@@ -76,7 +76,6 @@ class Client:
                 self.generate_account_key(service, key) 
             except sqlite3.OperationalError as  e:
                 print(e)
-
         return True
  
     def create_question(self,question, answer, service):
@@ -97,7 +96,6 @@ class Client:
                 self.generate_security_question_key(question, key, account_id)
             except sqlite3.OperationalError as  e:
                 print(e)
-
         return True 
     
     def account_key_id(self, account_service): 
@@ -126,14 +124,42 @@ class Client:
         self.conn.close()
         return True
 
-"""
-myClient = Client(
-    "http://deka:5000",
-    "schoolStuff"
-)
+    def load_encrypted_accounts(self): 
+        self.init_db()
+        cur = self.conn.cursor()
+        cur.execute('SELECT * FROM account_keys')   
+        rows = cur.fetchall()
+        for r in rows:
+            a = AccountKey(r[0], r[1], r[2])
+            self.accounts.append(a)
 
-myClient.check_status()
-myClient.create_account("Spotify5", "Shay", "Password") 
+    def get_accounts(self):
+        self.load_encrypted_accounts() 
+        for x in self.accounts:
+            print(x.dump()) 
+        
+    def load_encrypted_questions(self):
+        self.init_db()
+        cur = self.conn.cursor()
+        cur.execute('SELECT * FROM question_keys')   
+        rows = cur.fetchall()
+        for r in rows:
+            q = QuestionKey(r[0], r[1], r[2], r[3])
+            self.questions.append(q)
+ 
+    def get_questions(self):
+        self.load_encrypted_questions() 
+        for x in self.questions:
+            print(x.dump()) 
+
+#myClient = Client(
+    #"http://deka:5000",
+    #"schoolStuff"
+#)
+
+#myClient.check_status()
+#myClient.create_account("Spotify5", "Shay", "Password") 
 #myClient.init_db()
-myClient.create_question("Mothers maiden name", "mom", "Spotify5")
-"""
+#myClient.create_question("Mothers maiden name", "mom", "Spotify5")
+#myClient.get_accounts()
+#myClient.get_questions() 
