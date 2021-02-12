@@ -37,10 +37,7 @@ class Client:
             print("creating database: ")
         else:
             print("Schema already generated: ")  
-
-        self.conn.close() 
-        
-    """ 
+    
     def generate_account_key(self, service, key): 
         data = (service, key)
         sql = '''  INSERT INTO account_keys(service,key) VALUES (?, ?) '''
@@ -49,7 +46,7 @@ class Client:
         self.conn.commit()
         print("inserted account private key: {} ".format(key)) 
         self.conn.close()
- 
+
     def generate_security_question_key(self, question, key, account_id):
         data = (question,key, account_id)
         sql = '''  INSERT INTO question_keys(question,key,question_account) VALUES (?, ?, ?) '''
@@ -58,14 +55,33 @@ class Client:
         self.conn.commit()
         print("inserted security question key: {} ".format(key))
         self.conn.close() 
-#create database client
+
+    def create_account(self, service, username, password):
+        params = {}
+        params["service"] = service
+        params["username"] = username
+        params["password"] = password
+        server = requests.post(self.host + "/accounts", data=params)
+        data = json.loads(server.text)
+        if data == "Error":
+            print("Error occured: Could not create account")
+        else: 
+            service = data["service"] 
+            key = bytes(data["key"], "utf-8")
+            try:
+                self.generate_account_key(service, key) 
+            except sqlite3.OperationalError as  e:
+                print(e)
+
+        return True
+          
+"""          
 myClient = Client(
-    "http://127.0.0.1:5000",
-    "client46"
+    "http://deka:5000",
+    "schoolStuff"
 )
 
 myClient.init_db()
 myClient.check_status()
-
-"""        
-
+myClient.create_account("Spotify3", "Shay", "Password") 
+"""
