@@ -28,6 +28,7 @@ class Client:
             print(e)
  
     def check_status(self):
+        self.init_db()
         cursor = self.conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         fetch = cursor.fetchall() 
@@ -36,9 +37,11 @@ class Client:
             os.system(command) 
             print("creating database: ")
         else:
-            print("Schema already generated: ")  
+            print("Schema already generated: ") 
+        self.conn.close()  
          
     def generate_account_key(self, service, key): 
+        self.init_db()
         data = (service, key)
         sql = '''  INSERT INTO account_keys(service,key) VALUES (?, ?) '''
         cur = self.conn.cursor()
@@ -46,9 +49,9 @@ class Client:
         self.conn.commit()
         print("inserted account private key: {} ".format(key)) 
         self.conn.close()
-
     
-    def generate_security_question_key(self, question, key, account_id):
+    def generate_security_question_key(self, question, key, account_id): 
+        self.init_db()
         data = (question,key, account_id)
         sql = '''  INSERT INTO question_keys(question,key,question_account) VALUES (?, ?, ?) '''
         cur = self.conn.cursor()
@@ -75,8 +78,30 @@ class Client:
                 print(e)
 
         return True
+ 
+    def create_question(self,question, answer, service):
+        account_id_response = requests.get(self.host + "/account/{}".format(service))
+        account_data = json.loads(account_id_response.text) 
+        account_id = account_data["account_id"]
+        params = {}
+        params["question"] = question
+        params["answer"] = answer   
+        server = requests.post(self.host + "/account/question/" + service, data=params)
+        data = json.loads(server.text) 
+        if data == "Error":
+            print("Error occured: Could not create question")
+        else:
+            service = data["service"] 
+            key = bytes(data["key"], "utf-8")
+            try:
+                self.generate_security_question_key(question, key, account_id)
+            except sqlite3.OperationalError as  e:
+                print(e)
+
+        return True 
     
     def account_key_id(self, account_service): 
+        self.init_db()
         cur = self.conn.cursor()
         data = (account_service,)
         cur.execute('SELECT * FROM account_keys WHERE service=? ', data)
@@ -86,20 +111,29 @@ class Client:
         return account
 
     def delete_all_account_keys(self): 
+        self.init_db() 
         cur = self.conn.cursor()
         cur.execute('DELETE FROM account_keys')
         self.conn.commit()
         self.conn.close()
         return True
+ 
+    def delete_all_question_keys(self): 
+        self.init_db() 
+        cur = self.conn.cursor()
+        cur.execute('DELETE FROM question_keys')
+        self.conn.commit()
+        self.conn.close()
+        return True
 
-"""  
+"""
 myClient = Client(
     "http://deka:5000",
     "schoolStuff"
 )
 
-myClient.init_db()
-#myClient.check_status()
-#myClient.create_account("Spotify3", "Shay", "Password") 
-myClient.delete_all_account_keys()  
+myClient.check_status()
+myClient.create_account("Spotify5", "Shay", "Password") 
+#myClient.init_db()
+myClient.create_question("Mothers maiden name", "mom", "Spotify5")
 """
