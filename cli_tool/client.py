@@ -178,12 +178,12 @@ class Client:
 
 
 
-#myClient = Client(
-#    "http://deka:5000",
-#    "schoolStuff"
-#)
+myClient = Client(
+    "http://deka:5000",
+    "schoolStuff"
+)
 
-#myClient.check_status()
+myClient.check_status()
 #myClient.create_account("Spotify10", "Shay", "Password") 
 #myClient.init_db()
 #myClient.create_question("Mothers maiden name", "mom", "Spotify5")

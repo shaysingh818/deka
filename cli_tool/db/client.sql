@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS account_keys (
 
 
 CREATE TABLE IF NOT EXISTS question_keys (
-	question_id INTEGER, 
+	question_id INTEGER PRIMARY_KEY, 
 	question TEXT, 
 	key TEXT, 
 	question_account INTEGER, 
