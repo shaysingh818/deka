@@ -137,7 +137,25 @@ class Client:
         self.load_encrypted_accounts() 
         for x in self.accounts:
             print(x.dump()) 
-        
+
+    def decrypt_all_accounts(self):
+        try:
+            self.load_encrypted_accounts()
+            response = requests.get(self.host + "/accounts")
+            json_data = json.loads(response.text) 
+            for key, password in zip(self.accounts, json_data):
+                client_key = key.get_key() 
+                server_pass = password["password"]
+                k = Fernet(client_key) 
+                my_p = bytes(server_pass, 'utf-8')
+                password = k.decrypt(my_p)
+                password = password.decode('utf-8')
+                print("Service:  {} || Password: {}".format(key.get_service(),  password))
+        except sqlite3.OperationalError as e:
+            print(e)
+            return False
+        return True
+                            
     def load_encrypted_questions(self):
         self.init_db()
         cur = self.conn.cursor()
@@ -150,16 +168,23 @@ class Client:
     def get_questions(self):
         self.load_encrypted_questions() 
         for x in self.questions:
-            print(x.dump()) 
+            print(x.dump())
+    
+    def decrypt_all_questions(self):
+        pass
+
+
+
+
+
 
 #myClient = Client(
-    #"http://deka:5000",
-    #"schoolStuff"
+#    "http://deka:5000",
+#    "schoolStuff"
 #)
 
 #myClient.check_status()
-#myClient.create_account("Spotify5", "Shay", "Password") 
+#myClient.create_account("Spotify10", "Shay", "Password") 
 #myClient.init_db()
 #myClient.create_question("Mothers maiden name", "mom", "Spotify5")
-#myClient.get_accounts()
-#myClient.get_questions() 
+#myClient.decrypt_all_accounts()
