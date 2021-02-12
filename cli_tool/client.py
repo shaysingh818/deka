@@ -37,7 +37,7 @@ class Client:
             print("creating database: ")
         else:
             print("Schema already generated: ")  
-    
+         
     def generate_account_key(self, service, key): 
         data = (service, key)
         sql = '''  INSERT INTO account_keys(service,key) VALUES (?, ?) '''
@@ -47,6 +47,7 @@ class Client:
         print("inserted account private key: {} ".format(key)) 
         self.conn.close()
 
+    
     def generate_security_question_key(self, question, key, account_id):
         data = (question,key, account_id)
         sql = '''  INSERT INTO question_keys(question,key,question_account) VALUES (?, ?, ?) '''
@@ -54,7 +55,7 @@ class Client:
         cur.execute(sql, data) 
         self.conn.commit()
         print("inserted security question key: {} ".format(key))
-        self.conn.close() 
+        self.conn.close()
 
     def create_account(self, service, username, password):
         params = {}
@@ -74,14 +75,31 @@ class Client:
                 print(e)
 
         return True
-          
-"""          
+    
+    def account_key_id(self, account_service): 
+        cur = self.conn.cursor()
+        data = (account_service,)
+        cur.execute('SELECT * FROM account_keys WHERE service=? ', data)
+        result = cur.fetchone()
+        account = AccountKey(result[0], result[1], result[2])
+        self.conn.close()
+        return account
+
+    def delete_all_account_keys(self): 
+        cur = self.conn.cursor()
+        cur.execute('DELETE FROM account_keys')
+        self.conn.commit()
+        self.conn.close()
+        return True
+
+"""  
 myClient = Client(
     "http://deka:5000",
     "schoolStuff"
 )
 
 myClient.init_db()
-myClient.check_status()
-myClient.create_account("Spotify3", "Shay", "Password") 
+#myClient.check_status()
+#myClient.create_account("Spotify3", "Shay", "Password") 
+myClient.delete_all_account_keys()  
 """
