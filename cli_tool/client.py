@@ -170,11 +170,23 @@ class Client:
         for x in self.questions:
             print(x.dump())
     
-    def decrypt_all_questions(self):
-        pass
-
-
-
+    def decrypt_all_questions(self, account_service): 
+        try:
+            self.load_encrypted_questions()
+            response = requests.get(self.host + "/account/question/{}".format(account_service))
+            json_data = json.loads(response.text) 
+            for key, answer in zip(self.questions, json_data):
+                client_key = key.get_key() 
+                server_answer = answer["answer"]
+                k = Fernet(client_key) 
+                my_a = bytes(server_answer, 'utf-8')
+                d_answer = k.decrypt(my_a)
+                d_answer = d_answer.decode('utf-8')
+                print("Service:  {} || Password: {}".format(key.get_question(),  d_answer))
+        except sqlite3.OperationalError as e:
+            print(e)
+            return False
+        return True
 
 
 
@@ -183,8 +195,8 @@ myClient = Client(
     "schoolStuff"
 )
 
-myClient.check_status()
+#myClient.check_status()
 #myClient.create_account("Spotify10", "Shay", "Password") 
 #myClient.init_db()
-#myClient.create_question("Mothers maiden name", "mom", "Spotify5")
-#myClient.decrypt_all_accounts()
+#myClient.create_question("Mothers maiden name", "mom", "Spotify10")
+myClient.decrypt_all_questions("Spotify10")
