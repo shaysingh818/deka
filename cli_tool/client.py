@@ -10,12 +10,13 @@ db_dir = os.path.dirname(os.path.abspath(__file__))
 
 class Client:
 
-    def __init__(self, host_address, alias):
+    def __init__(self, host_address, alias, description):
         self.conn = None
         self.host = host_address
         self.accounts = []
         self.questions = [] 
         self.alias = alias
+        self.description = description
         self.db_file = "{}.db".format(alias) 
         self.db_path = db_dir + "/db/{}".format(self.db_file)
 
@@ -192,7 +193,8 @@ class Client:
 
 myClient = Client(
     "http://deka:5000",
-    "schoolStuff"
+    "schoolStuff",
+    "Accounts for school related stuff"
 )
 
 #myClient.check_status()
