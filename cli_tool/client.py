@@ -19,6 +19,7 @@ class Client:
         self.description = description
         self.db_file = "{}.db".format(alias) 
         self.db_path = db_dir + "/db/{}".format(self.db_file)
+        self.check_status() 
 
     # database helper method
     def init_db(self):
@@ -201,4 +202,4 @@ myClient = Client(
 #myClient.create_account("Spotify10", "Shay", "Password") 
 #myClient.init_db()
 #myClient.create_question("Mothers maiden name", "mom", "Spotify10")
-myClient.decrypt_all_questions("Spotify10")
+#myClient.decrypt_all_questions("Spotify10")
